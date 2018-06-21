@@ -39,9 +39,33 @@ public class CooktailMemoActivity extends AppCompatActivity {
 
     }
 
-    public void onSaveButtonClick(View view){
+    public void onSaveButtonClick(View view) {
 
         EditText etNote = findViewById(R.id.etNote);
+        String note = etNote.getText().toString();
+
+        DatabaseHelper helper = new DatabaseHelper(CocktailMemoActivity.this);
+        SQLiteDatabase sb = helper.getWritableDatabase();
+        String sqlDelete = "DELETE FROM cocktailmemo WHERE _id = ?";
+        SQLiteStatement stmt = db.compileStatement(sqlDelete);
+        stmt.bindLong(1, _cocktailId);
+        stmt.executeUpdateDelete();
+
+        String sqlInsert ="INSERT TO cocktailmemo(_id,name,note) VALUES (?,?,?)";
+
+        stmt = db.compileStatement(sqlInsert);
+
+
+        stmt.bindLong(1, _cocktailId);
+        stmt.bindString(2, _cocktailName);
+        stmt.bindString(3,note);
+        stmt.executeInsert();
+    }
+    finally
+
+    {
+        db.close();
+    }
 
         _tvCocktailName.setText(getString(R.string.tv_name));
 
@@ -63,6 +87,23 @@ public class CooktailMemoActivity extends AppCompatActivity {
 
            _btnSave.setEnabled(true);
 
-        }
+           DatabaseHelper helper = new DatabaseHelper(CocktailMemoActivity.this);
+           SQLiteDatabase db = helper.getWritableDatabase();
+           try{
+               String sql = "SELECT * FROM cocktailmemo WHERE _id = "+ _cocktailid;
+
+               Cursor cursor = db.rawQuery(sql,null);
+               String note = "";
+
+               while(cursor.moveToNext()){
+                   int idxNote = cursor.getColumnIndex("note");
+                   note =cursor.getString(idxNote);
+               }
+               EditText etNote = findViewById(R.id.etNote);
+               etNote.setText(note);
+
+        }finally{
+               db.close();
+           }
     }
 }
